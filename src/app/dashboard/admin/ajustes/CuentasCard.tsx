@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { guardarCuentasAction } from './actions'
 import { Landmark, Plus, Trash2, Save } from 'lucide-react'
 
@@ -16,8 +16,14 @@ export default function CuentasCard({ cuentasIniciales }: { cuentasIniciales: an
     const [nuevoNumero, setNuevoNumero] = useState('')
     const [tipoCuenta, setTipoCuenta] = useState('Pago Móvil / Transferencia')
 
-    function agregarCuenta() {
-        if (!nuevoBanco || !nuevoTitular || !nuevoNumero) return;
+    console.log('CuentasCard Render - Props:', cuentasIniciales, 'State:', cuentas)
+
+    async function agregarCuenta() {
+        if (!nuevoBanco || !nuevoTitular || !nuevoNumero) {
+            setError('Todos los campos son obligatorios para añadir la cuenta.')
+            setTimeout(() => setError(null), 3000)
+            return;
+        }
 
         const nueva = {
             id: Date.now().toString(),
@@ -27,24 +33,32 @@ export default function CuentasCard({ cuentasIniciales }: { cuentasIniciales: an
             tipo: tipoCuenta
         }
 
-        setCuentas([...cuentas, nueva])
+        const nuevasCuentas = [...cuentas, nueva]
+        setCuentas(nuevasCuentas)
         setNuevoBanco('')
         setNuevoTitular('')
         setNuevoNumero('')
-        setSuccess(false)
+
+        // Auto-guardado
+        await guardarCambios(nuevasCuentas)
     }
 
-    function eliminarCuenta(id: string) {
-        setCuentas(cuentas.filter(c => c.id !== id))
-        setSuccess(false)
+    async function eliminarCuenta(id: string) {
+        const filtradas = cuentas.filter(c => c.id !== id)
+        setCuentas(filtradas)
+
+        // Auto-guardado
+        await guardarCambios(filtradas)
     }
 
-    async function guardarTodo() {
+    async function guardarCambios(listaCuentas: any[]) {
+        console.log('Intentando guardar cuentas:', listaCuentas)
         setLoading(true)
         setError(null)
         setSuccess(false)
 
-        const res = await guardarCuentasAction(cuentas)
+        const res = await guardarCuentasAction(listaCuentas)
+        console.log('Resultado del guardado:', res)
 
         if (res?.error) {
             setError(res.error)
@@ -119,29 +133,20 @@ export default function CuentasCard({ cuentasIniciales }: { cuentasIniciales: an
 
                 <button
                     onClick={agregarCuenta}
-                    className="w-full flex items-center justify-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors"
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors disabled:opacity-50"
                 >
-                    <Plus className="w-4 h-4" />
-                    Añadir a la lista
+                    {loading ? <Plus className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                    {loading ? 'Guardando...' : 'Añadir a la lista'}
                 </button>
             </div>
 
-            {/* Guardar Global */}
-            <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-5">
-                <div className="flex-1">
-                    {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
-                    {success && <p className="text-xs text-emerald-600 font-medium">¡Cuentas Guardadas!</p>}
-                    {!error && !success && cuentas.length > 0 && <p className="text-xs text-slate-400">Recuerda guardar los cambios</p>}
-                </div>
-
-                <button
-                    onClick={guardarTodo}
-                    disabled={loading || (cuentas.length === 0 && !cuentasIniciales)}
-                    className="flex items-center gap-2 bg-[#1e3a8a] hover:bg-blue-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-sm disabled:opacity-50"
-                >
-                    {loading ? 'Guardando...' : 'Guardar Cuentas'}
-                    <Save className="w-4 h-4" />
-                </button>
+            {/* Estado del Auto-guardado */}
+            <div className="mt-4 h-6">
+                {error && <p className="text-xs text-red-500 font-medium text-center">{error}</p>}
+                {success && <p className="text-xs text-emerald-600 font-medium text-center flex items-center justify-center gap-1">
+                    <Save className="w-3 h-3" /> ¡Cambios guardados automáticamente!
+                </p>}
             </div>
         </div>
     )

@@ -24,14 +24,20 @@ export async function guardarAnuncioAction(formData: FormData) {
         const textoLimpio = nuevoAnuncio?.trim() || null // Si envía vacío, limpiamos el tablón
 
         // 2. Actualizar Tabla Condominios
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('condominios')
             .update({ anuncio_tablon: textoLimpio })
             .eq('id', adminPerfil.condominio_id)
+            .select()
 
         if (error) {
             console.error(error)
             return { error: 'Error al actualizar el tablón.' }
+        }
+
+        if (!data || data.length === 0) {
+            console.warn('Bitácora: RLS bloqueando actualización de condominios')
+            return { error: 'Error de permisos (RLS) al actualizar el tablón.' }
         }
 
         revalidatePath('/dashboard/admin/ajustes')
@@ -58,20 +64,31 @@ export async function guardarCuentasAction(cuentasJson: any[]) {
 
         if (!adminPerfil) return { error: 'Perfil no encontrado' }
 
-        const { error } = await supabase
+        console.log('DEBUG: Guardando cuentas para condominio', adminPerfil.condominio_id)
+        console.log('DEBUG: JSON:', JSON.stringify(cuentasJson))
+
+        const { data, error } = await supabase
             .from('condominios')
             .update({ cuentas_bancarias: cuentasJson })
             .eq('id', adminPerfil.condominio_id)
+            .select()
 
         if (error) {
-            console.error(error)
+            console.error('Error DB:', error)
             return { error: 'Error al guardar cuentas.' }
         }
 
+        if (!data || data.length === 0) {
+            console.warn('DEBUG: No se actualizó el condominio (RLS Fail)')
+            return { error: 'No tienes permiso para actualizar este condominio (RLS).' }
+        }
+
+        console.log('DEBUG: Guardado exitoso')
         revalidatePath('/dashboard/admin/ajustes')
         return { success: true }
-    } catch (err) {
-        return { error: 'Error inesperado.' }
+    } catch (err: any) {
+        console.error('Fatal:', err)
+        return { error: 'Error inesperado: ' + err.message }
     }
 }
 

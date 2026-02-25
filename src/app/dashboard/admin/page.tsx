@@ -1,4 +1,4 @@
-import { Search, MessageSquare, Clock, ChevronDown, CheckCircle2, ChevronRight, Receipt, FileText, Megaphone, Bell, TrendingUp, Building, Calendar, Check, X, Eye, Plus, AlertCircle, Ticket, Wallet, Download } from 'lucide-react'
+import { Search, MessageSquare, Clock, ChevronDown, CheckCircle2, ChevronRight, Receipt, FileText, Megaphone, Bell, TrendingUp, Building, Calendar, Check, X, Eye, Plus, AlertCircle, Wallet, Download } from 'lucide-react'
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -199,9 +199,31 @@ export default async function AdminDashboardPage({
 
                 <div className="space-y-6 max-w-7xl mx-auto">
 
-                    {successMsg && (
-                        <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl border border-emerald-200 text-sm font-medium flex items-center justify-between">
-                            <span>✅ Recibos generados y emitidos exitosamente a todos los condóminos de la torre.</span>
+                    {/* === BANNER DE ANUNCIO DESTACADO (NUEVO) === */}
+                    {anuncioTablon && (
+                        <div className="bg-gradient-to-r from-[#1e3a8a] to-blue-900 rounded-2xl p-6 shadow-xl border border-blue-400/30 relative overflow-hidden group">
+                            {/* Decoración de fondo */}
+                            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-all duration-700"></div>
+
+                            <div className="flex items-center justify-between relative z-10">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/20 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                                        <Megaphone className="w-7 h-7" />
+                                    </div>
+                                    <div className="max-w-2xl">
+                                        <h2 className="text-white/60 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Comunicado Oficial</h2>
+                                        <p className="text-white text-lg font-bold leading-relaxed">
+                                            {anuncioTablon}
+                                        </p>
+                                    </div>
+                                </div>
+                                <Link
+                                    href="/dashboard/admin/anuncios"
+                                    className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-sm font-bold border border-white/20 backdrop-blur-sm transition-all group-hover:shadow-lg flex items-center gap-2"
+                                >
+                                    Editar Cartelera
+                                </Link>
+                            </div>
                         </div>
                     )}
 
@@ -307,20 +329,6 @@ export default async function AdminDashboardPage({
                                     <span className="text-xs font-bold text-[#1e3a8a] cursor-pointer hover:underline uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-md border border-blue-100">Ir al Foro</span>
                                 </div>
                                 <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
-                                    {anuncioTablon && (
-                                        <div className="p-5 flex gap-4 hover:bg-slate-50 transition-colors">
-                                            <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0 border border-amber-100">
-                                                <Megaphone className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm text-slate-800 leading-tight">
-                                                    <span className="font-bold text-slate-900 block mb-1">Aviso Actual Publicado:</span>
-                                                    "{anuncioTablon.substring(0, 100)}{anuncioTablon.length > 100 ? '...' : ''}"
-                                                </p>
-                                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-2 bg-slate-100 px-2 py-0.5 rounded-md inline-block">Anclado por la Administración</p>
-                                            </div>
-                                        </div>
-                                    )}
                                     <div className="p-5 flex gap-4 hover:bg-slate-50 transition-colors">
                                         <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center flex-shrink-0 border border-emerald-100">
                                             <CheckCircle2 className="w-5 h-5" />
@@ -328,15 +336,6 @@ export default async function AdminDashboardPage({
                                         <div>
                                             <p className="text-sm text-slate-800"><span className="font-bold text-slate-900">Validación de Fondos:</span> Cobro a Inmueble 102 - $85.00</p>
                                             <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-2 bg-slate-100 px-2 py-0.5 rounded-md inline-block">Hace unas horas • Automático</p>
-                                        </div>
-                                    </div>
-                                    <div className="p-5 flex gap-4 hover:bg-slate-50 transition-colors">
-                                        <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center flex-shrink-0 border border-orange-100">
-                                            <Ticket className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-slate-800"><span className="font-bold text-slate-900">Solicitud de Soporte:</span> Bombillo quemado pasillo norte.</p>
-                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-2 bg-slate-100 px-2 py-0.5 rounded-md inline-block">Ayer • Reporte de Vecino</p>
                                         </div>
                                     </div>
                                 </div>
@@ -465,6 +464,24 @@ export default async function AdminDashboardPage({
                     <NotificacionesWidget count={unreadAdminCount || 0} href="/dashboard/admin/notificaciones" theme="light" />
                 </header>
 
+                {/* ANUNCIO MOBILE DESTACADO */}
+                {anuncioTablon && (
+                    <div className="mx-5 mt-4">
+                        <div className="bg-gradient-to-br from-[#1e3a8a] to-[#2563eb] p-4 rounded-2xl shadow-lg border border-blue-400/20">
+                            <div className="flex items-center gap-3 mb-2">
+                                <Megaphone className="w-4 h-4 text-blue-200" />
+                                <span className="text-blue-100 text-[9px] font-bold uppercase tracking-widest">Aviso Importante</span>
+                            </div>
+                            <p className="text-white text-sm font-bold leading-tight">
+                                {anuncioTablon}
+                            </p>
+                            <Link href="/dashboard/admin/anuncios" className="mt-3 block text-center py-2 bg-white/10 rounded-lg text-white text-[10px] font-bold border border-white/10">
+                                Actualizar Anuncio
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
                 <div className="px-5 space-y-4 pt-4">
                     {successMsg && (
                         <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl border border-emerald-200 text-sm font-medium flex items-center justify-between animate-in fade-in slide-in-from-top-2">
@@ -486,17 +503,6 @@ export default async function AdminDashboardPage({
                         </div>
                     </div>
 
-                    <Link href="/dashboard/admin/tickets" className="flex items-center justify-between bg-orange-50 border border-orange-200 p-4 rounded-xl mt-4 hover:bg-orange-100 transition-colors">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-orange-500 text-white p-2.5 rounded-xl shadow-sm">
-                                <Ticket className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="font-bold text-slate-800 tracking-tight">Centro de Soporte</p>
-                                <p className="text-xs text-slate-500">Gestiona los reclamos de los residentes</p>
-                            </div>
-                        </div>
-                    </Link>
 
                     <Link href="/dashboard/admin/anuncios" className="flex items-center justify-between bg-amber-50 border border-amber-200 p-4 rounded-xl mt-4 hover:bg-amber-100 transition-colors">
                         <div className="flex items-center gap-4">
@@ -510,12 +516,6 @@ export default async function AdminDashboardPage({
                         </div>
                     </Link>
 
-                    <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between shadow-sm cursor-pointer">
-                        <div className="flex items-center gap-3">
-                            <Building className="w-5 h-5 text-slate-400" />
-                            <span className="text-sm font-medium text-slate-800">Todas las Unidades Habitacionales</span>
-                        </div>
-                    </div>
 
                     <div className="flex items-center gap-2 mt-6 mb-2">
                         <AlertCircle className="w-4 h-4 text-orange-500" />

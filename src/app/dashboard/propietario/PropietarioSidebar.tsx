@@ -28,12 +28,6 @@ export default function PropietarioSidebar() {
             isActive: false
         },
         {
-            name: 'Tickets de Soporte',
-            href: '/dashboard/propietario/tickets',
-            icon: Ticket,
-            isActive: pathname.startsWith('/dashboard/propietario/tickets')
-        },
-        {
             name: 'Mi Perfil',
             href: '/dashboard/propietario/perfil',
             icon: User,

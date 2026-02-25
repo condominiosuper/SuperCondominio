@@ -7,6 +7,8 @@ import TasaBcvWidget from './TasaBcvWidget'
 import CartaResidenciaCard from './CartaResidenciaCard'
 import { signOutAction } from '@/app/auth/actions'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminAjustesPage() {
     const supabase = await createClient()
 
@@ -20,18 +22,31 @@ export default async function AdminAjustesPage() {
         )
     }
 
-    // Obtener condominio y perfil del Admin
+    // 1. Obtener perfil
     const { data: adminPerfil } = await supabase
         .from('perfiles')
-        .select(`
-            *,
-            condominios:condominio_id ( nombre, direccion, anuncio_tablon, cuentas_bancarias, carta_residencia_url )
-        `)
+        .select('*')
         .eq('auth_user_id', user.id)
         .eq('rol', 'admin')
         .single()
 
-    const condominioData = adminPerfil?.condominios as any;
+    if (!adminPerfil) {
+        return <div className="p-5 text-red-500">Error: Perfil Admin no encontrado.</div>
+    }
+
+    // 2. Obtener condominio (Separado para evitar errores de join/RLS)
+    const { data: condoData } = await supabase
+        .from('condominios')
+        .select('*')
+        .eq('id', adminPerfil.condominio_id)
+        .single()
+
+    console.log('--- DIAGNÓSTICO DE AJUSTES ---')
+    console.log('User Auth ID:', user.id)
+    console.log('Perfil ID:', adminPerfil.id)
+    console.log('Condominio ID:', adminPerfil.condominio_id)
+    console.log('Condominio Encontrado:', condoData ? 'SÍ' : 'NO')
+    console.log('Cuentas en DB:', JSON.stringify(condoData?.cuentas_bancarias))
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
@@ -39,6 +54,7 @@ export default async function AdminAjustesPage() {
             <header className="px-5 py-6 bg-white border-b border-slate-200 sticky top-0 z-40">
                 <h1 className="text-2xl font-bold text-[#1e3a8a]">Ajustes de Perfil</h1>
                 <p className="text-slate-500 text-sm mt-1">Configuración Administrativa</p>
+                <div className="text-[10px] text-slate-300 pointer-events-none">ID: {adminPerfil.condominio_id}</div>
             </header>
 
             <div className="p-5 space-y-6">
@@ -69,14 +85,12 @@ export default async function AdminAjustesPage() {
                         <div>
                             <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">CONDOMINIO ADMINISTRADO</p>
                             <h3 className="font-bold text-slate-800 text-lg">
-                                {/* @ts-ignore */}
-                                {adminPerfil?.condominios?.nombre || 'Condominio Central'}
+                                {condoData?.nombre || 'Condominio Central'}
                             </h3>
                         </div>
                     </div>
                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm text-slate-600 leading-relaxed font-medium">
-                        {/* @ts-ignore */}
-                        {adminPerfil?.condominios?.direccion || 'Dirección no configurada'}
+                        {condoData?.direccion || 'Dirección no configurada'}
                     </div>
                 </div>
 
@@ -90,13 +104,13 @@ export default async function AdminAjustesPage() {
                     <TasaBcvWidget />
 
                     {/* Tablón de Anuncios */}
-                    <TablonCard anuncioActual={condominioData?.anuncio_tablon || null} />
+                    <TablonCard anuncioActual={condoData?.anuncio_tablon || null} />
 
                     {/* Carta de Residencia */}
-                    <CartaResidenciaCard urlActual={condominioData?.carta_residencia_url || null} />
+                    <CartaResidenciaCard urlActual={condoData?.carta_residencia_url || null} />
 
                     {/* Cuentas Bancarias */}
-                    <CuentasCard cuentasIniciales={condominioData?.cuentas_bancarias || []} />
+                    <CuentasCard cuentasIniciales={condoData?.cuentas_bancarias || []} />
                 </div>
                 {/* --------------------------------------------------- */}
 

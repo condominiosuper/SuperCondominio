@@ -13,7 +13,7 @@ export default function AdminBottomNav() {
             href: '/dashboard/admin',
             icon: LayoutDashboard,
             // Match exacto para el dashboard, match parcial para otras
-            isActive: pathname === '/dashboard/admin' || pathname === '/dashboard/admin/tickets' || pathname === '/dashboard/admin/emitir-cobro'
+            isActive: pathname === '/dashboard/admin' || pathname === '/dashboard/admin/emitir-cobro'
         },
         {
             name: 'Finanzas',

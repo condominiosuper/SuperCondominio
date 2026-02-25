@@ -1,7 +1,10 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
-import { Wallet, TrendingUp, HandCoins, ArrowRight, Receipt, FileText, TrendingDown } from 'lucide-react'
+import { Wallet, TrendingUp, HandCoins, ArrowRight, Receipt, FileText, TrendingDown, ClipboardList } from 'lucide-react'
 import ParametrosFinancierosCard from './ParametrosFinancierosCard'
+import { getReporteConsolidadosAction } from './actions'
+import ReporteCuentasPorCobrar from '@/components/ReporteCuentasPorCobrar'
+import ExcelActions from '@/components/ExcelActions'
 
 export default async function AdminFinanzasPage() {
     const supabase = await createClient()
@@ -30,6 +33,19 @@ export default async function AdminFinanzasPage() {
     if (!adminPerfil) {
         return <div className="p-5 text-red-500">Error: Perfil Admin no encontrado.</div>
     }
+
+    // Obtener Tasa BCV Oficial
+    let tasaBcv = 36.50;
+    try {
+        const resBcv = await fetch('https://ve.dolarapi.com/v1/dolares/oficial', { next: { revalidate: 3600 } })
+        if (resBcv.ok) {
+            const dataBcv = await resBcv.json()
+            tasaBcv = dataBcv.promedio
+        }
+    } catch (e) { }
+
+    // Obtener Data para el Reporte Consolidado
+    const { data: reporteData } = await getReporteConsolidadosAction()
 
     // Calcular montos desde la tabla recibos_cobro (INGRESOS)
     const { data: recibos } = await supabase
@@ -61,9 +77,9 @@ export default async function AdminFinanzasPage() {
     const balanceNeto = totalRecaudado - totalEgresos;
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-20">
-            {/* Header Rediseñado */}
-            <div className="bg-[#1e3a8a] text-white px-6 pt-12 pb-6 rounded-b-3xl shadow-md sticky top-0 z-40">
+        <div className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden">
+            {/* Header Rediseñado - Sticky a nivel de mobile */}
+            <div className="bg-[#1e3a8a] text-white px-6 pt-12 pb-6 rounded-b-3xl shadow-lg sticky top-0 z-50">
                 <div className="flex justify-between items-center mb-6">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">Centro Financiero</h1>
@@ -107,11 +123,32 @@ export default async function AdminFinanzasPage() {
                         <p className="text-[10px] font-bold text-orange-600 tracking-widest uppercase">CUENTAS POR COBRAR</p>
                         <p className="text-xl font-bold text-orange-700">${totalCuentasPorCobrar.toFixed(2)}</p>
                     </div>
-                    <HandCoins className="w-8 h-8 text-orange-200" />
+                    <div className="bg-white/50 p-2 rounded-lg text-orange-600 text-xs font-bold">
+                        {(totalCuentasPorCobrar * tasaBcv).toLocaleString('es-VE')} Bs.
+                    </div>
                 </div>
 
+                {/* === REPORTE CONSOLIDADO (NUEVO) === */}
+                <div className="pt-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 px-1">
+                        <div className="flex items-center gap-2">
+                            <ClipboardList className="w-5 h-5 text-slate-800" />
+                            <h3 className="text-slate-800 font-bold">Reporte Consolidado de Deudas</h3>
+                        </div>
+                        <ExcelActions />
+                    </div>
+                    {reporteData ? (
+                        <ReporteCuentasPorCobrar data={reporteData} tasaBcv={tasaBcv} />
+                    ) : (
+                        <div className="p-10 text-center bg-white rounded-3xl border border-slate-100 text-slate-400 text-sm">
+                            Cargando reporte...
+                        </div>
+                    )}
+                </div>
+                {/* =================================== */}
+
                 {/* === INYECCIÓN DE LA CARTA DE PARAMETROS (FASE 16) === */}
-                <div className="pt-2">
+                <div className="pt-6">
                     <ParametrosFinancierosCard
                         // @ts-ignore
                         montoMensualInicial={adminPerfil.condominios?.monto_mensual_usd || 0}

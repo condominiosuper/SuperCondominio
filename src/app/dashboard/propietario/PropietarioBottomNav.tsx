@@ -27,12 +27,6 @@ export default function PropietarioBottomNav() {
             isActive: false // Al ser un ancla, no lo marcamos activo de forma persistente
         },
         {
-            name: 'Tickets',
-            href: '/dashboard/propietario/tickets',
-            icon: Ticket,
-            isActive: pathname.startsWith('/dashboard/propietario/tickets')
-        },
-        {
             name: 'Perfil',
             href: '/dashboard/propietario/perfil',
             icon: User,

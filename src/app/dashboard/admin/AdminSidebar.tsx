@@ -13,7 +13,7 @@ export default function AdminSidebar() {
             name: 'Panel de Control',
             href: '/dashboard/admin',
             icon: LayoutDashboard,
-            isActive: pathname === '/dashboard/admin' || pathname === '/dashboard/admin/tickets' || pathname === '/dashboard/admin/emitir-cobro'
+            isActive: pathname === '/dashboard/admin' || pathname === '/dashboard/admin/emitir-cobro'
         },
         {
             name: 'Centro Financiero',

@@ -2,9 +2,8 @@ import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { Users, Building, Mail, Phone, ArrowLeft, UserPlus, Home } from 'lucide-react'
 import VecinoActions from './VecinoActions'
-import NuevoVecinoForm from './NuevoVecinoForm'
 import InmuebleEditableInfo from './InmuebleEditableInfo'
-import NuevoInmuebleForm from './NuevoInmuebleForm'
+import RegistroMasivoVecinos from './RegistroMasivoVecinos'
 
 export default async function AdminVecinosPage() {
     const supabase = await createClient()
@@ -71,12 +70,8 @@ export default async function AdminVecinosPage() {
             </div>
 
             <div className="px-5 mt-6 space-y-6">
-
-                {/* Dashboard de Alta Rápida */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <NuevoInmuebleForm />
-                    <NuevoVecinoForm inmueblesDisponibles={inmueblesVancantes} />
-                </div>
+                {/* Nueva Sección Unificada de Alta (Individual + Excel) */}
+                <RegistroMasivoVecinos inmueblesVacantes={inmueblesVancantes} />
 
                 <div className="bg-white border text-center border-slate-200 p-6 rounded-2xl shadow-sm">
                     <div className="flex items-center justify-between">

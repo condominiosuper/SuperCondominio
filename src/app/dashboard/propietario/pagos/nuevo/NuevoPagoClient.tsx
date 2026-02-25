@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { ArrowLeft, UploadCloud, Receipt, Building2, Calendar, FileText, CheckCircle2, Copy, CheckCheck, Landmark } from 'lucide-react'
 import Link from 'next/link'
 import { submitPagoAction } from './actions'
+import { compressImage } from '@/utils/imageCompression'
 
 interface Props {
     cuentasCondominio: any[]
@@ -66,13 +67,27 @@ export default function NuevoPagoClient({ cuentasCondominio }: Props) {
         }
 
         setIsSubmitting(true)
+        setServerError('')
 
         try {
+            let fileToUpload: Blob | File = selectedFile;
+
+            // Optimización: Comprimir si es imagen (no comprimir PDFs)
+            if (selectedFile.type.startsWith('image/')) {
+                try {
+                    const compressed = await compressImage(selectedFile, 1200, 0.7);
+                    fileToUpload = compressed;
+                } catch (compressErr) {
+                    console.error("Error comprimiendo imagen:", compressErr);
+                    // Si falla la compresión, seguimos con el original como fallback
+                }
+            }
+
             const formDataPayload = new FormData()
             formDataPayload.append('montoBs', formData.montoBs)
             formDataPayload.append('referencia', formData.referencia)
             formDataPayload.append('fecha', formData.fecha)
-            formDataPayload.append('capture', selectedFile)
+            formDataPayload.append('capture', fileToUpload, selectedFile.name)
 
             const response = await submitPagoAction(formDataPayload)
 
