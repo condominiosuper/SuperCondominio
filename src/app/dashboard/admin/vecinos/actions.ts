@@ -4,6 +4,18 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getAdminProfile } from '@/utils/supabase/admin-helper'
 
+async function logAdminAction(supabase: any, perfilId: string, evento: string, detalles: string | object) {
+    try {
+        await supabase.from('logs_sistema').insert({
+            evento,
+            detalles,
+            perfil_id: perfilId
+        })
+    } catch (e) {
+        console.error("No se pudo guardar el log de sistema:", e)
+    }
+}
+
 export async function crearVecinoAction(formData: FormData) {
     try {
         const { user, profile: adminPerfil } = await getAdminProfile()
@@ -80,8 +92,8 @@ export async function eliminarVecinoAction(perfilId: string) {
         const supabase = await createClient()
 
         // 1. Validar Admin
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return { success: false, error: 'No autorizado' }
+        const { user, profile: adminPerfil } = await getAdminProfile()
+        if (!user || !adminPerfil) return { success: false, error: 'No autorizado o perfil no encontrado' }
 
         // 2. Eliminar
         // Nota: El RLS debería proteger esto, pero lo hacemos explícito
@@ -94,8 +106,11 @@ export async function eliminarVecinoAction(perfilId: string) {
 
         if (error) {
             console.error("Error al eliminar vecino:", error)
-            return { success: false, error: 'No se pudo eliminar al vecino. Asegúrate de que no tenga registros vinculados bloqueantes.' }
+            return { success: false, error: 'No se pudo eliminar el recidente. Verifica que no tenga inmuebles vinculados primero.' }
         }
+
+        // --- Loggeo de Acción ---
+        await logAdminAction(supabase, adminPerfil.id, 'Eliminación de Residente', `Eliminó un perfil de vecino del sistema.`)
 
         revalidatePath('/dashboard/admin/vecinos')
         return { success: true }
@@ -108,6 +123,10 @@ export async function desvincularInmuebleAction(inmuebleId: string) {
     try {
         const supabase = await createClient()
 
+        // 1. Validar Admin
+        const { user, profile: adminPerfil } = await getAdminProfile()
+        if (!user || !adminPerfil) return { success: false, error: 'No autorizado o perfil no encontrado' }
+
         const { error } = await supabase
             .from('inmuebles')
             .update({ propietario_id: null })
@@ -117,6 +136,37 @@ export async function desvincularInmuebleAction(inmuebleId: string) {
             console.error("Error al desvincular:", error)
             return { success: false, error: 'Error al desvincular el inmueble.' }
         }
+
+        // --- Loggeo de Acción ---
+        await logAdminAction(supabase, adminPerfil.id, 'Desvinculación de Inmueble', `Desvinculó el inmueble ${inmuebleId} de su propietario.`)
+
+        revalidatePath('/dashboard/admin/vecinos')
+        return { success: true }
+    } catch (err) {
+        return { success: false, error: 'Error inesperado.' }
+    }
+}
+
+export async function asignarInmuebleAction(inmuebleId: string, perfilId: string) {
+    try {
+        const supabase = await createClient()
+
+        // 1. Validar Admin
+        const { user, profile: adminPerfil } = await getAdminProfile()
+        if (!user || !adminPerfil) return { success: false, error: 'No autorizado o perfil no encontrado' }
+
+        const { error } = await supabase
+            .from('inmuebles')
+            .update({ propietario_id: perfilId })
+            .eq('id', inmuebleId)
+
+        if (error) {
+            console.error("Error al asignar ocupante:", error)
+            return { success: false, error: 'Error al vincular el inmueble.' }
+        }
+
+        // --- Loggeo de Acción ---
+        await logAdminAction(supabase, adminPerfil.id, 'Asignación de Inmueble', `Unió el perfil ${perfilId} al inmueble ${inmuebleId}.`)
 
         revalidatePath('/dashboard/admin/vecinos')
         return { success: true }
@@ -177,6 +227,9 @@ export async function crearInmuebleAction(formData: FormData) {
             return { success: false, error: 'Error al registrar el inmueble.' }
         }
 
+        // --- Loggeo de Acción ---
+        await logAdminAction(supabase, adminPerfil.id, 'Creación de Inmueble', `Registró el nuevo inmueble ${identificador}.`)
+
         revalidatePath('/dashboard/admin/vecinos')
         return { success: true, id: newInm.id }
     } catch (err) {
@@ -201,6 +254,12 @@ export async function eliminarInmuebleAction(inmuebleId: string) {
         if (error) {
             console.error("Error al eliminar inmueble:", error)
             return { success: false, error: 'No se pudo eliminar el inmueble. Asegúrate de que no tenga registros vinculados (como recibos de cobro).' }
+        }
+
+        // --- Loggeo de Acción --- (Requiere temporalmente el perfil del admin llamandola)
+        const { profile } = await getAdminProfile()
+        if (profile) {
+            await logAdminAction(supabase, profile.id, 'Eliminación de Inmueble', `Borrón de un inmueble del sistema.`)
         }
 
         revalidatePath('/dashboard/admin/vecinos')

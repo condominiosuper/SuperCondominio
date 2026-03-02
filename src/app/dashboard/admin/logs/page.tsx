@@ -13,8 +13,7 @@ export default async function AdminLogsPage() {
     }
 
     // 1. Obtener Historial (Pagos Verificados/Rechazados por ahora)
-    // Ya que logs_sistema aún no tiene condominio_id, usamos pagos procesados como el historial principal
-    const { data: pagos, error } = await supabase
+    const { data: pagos } = await supabase
         .from('pagos_reportados')
         .select(`
             id,
@@ -34,8 +33,16 @@ export default async function AdminLogsPage() {
         .order('updated_at', { ascending: false })
         .limit(100)
 
+    // 2. Obtener Bitácora (filtrado vinculando el perfil con el condominio)
+    const { data: logsData, error } = await supabase
+        .from('logs_sistema')
+        .select('*, perfiles!inner(nombres, apellidos, condominio_id)')
+        .eq('perfiles.condominio_id', adminPerfil.condominio_id)
+        .order('created_at', { ascending: false })
+        .limit(100)
+
     // Mapear pagos al formato de bitácora
-    const logs = (pagos || []).map(pago => {
+    const pagosMapped = (pagos || []).map(pago => {
         const esVerificado = pago.estado === 'verificado'
         const perfilObj: any = Array.isArray(pago.perfil) ? pago.perfil[0] : pago.perfil
         const inmueblesArr = perfilObj?.inmuebles || []
@@ -51,6 +58,19 @@ export default async function AdminLogsPage() {
             perfil: perfilObj
         }
     })
+
+    const sistemLogsMapped = (logsData || []).map(log => ({
+        id: log.id,
+        evento: log.evento,
+        detalles: typeof log.detalles === 'string' ? log.detalles : JSON.stringify(log.detalles),
+        created_at: log.created_at,
+        perfil: log.perfiles
+    }))
+
+    // Combinar y ordenar ambos historiales por fecha descendente
+    const logs = [...pagosMapped, ...sistemLogsMapped].sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
 
     return (
         <div className="p-6 md:p-10 space-y-8 pb-24 md:pb-10">

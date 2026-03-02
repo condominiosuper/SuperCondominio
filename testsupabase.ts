@@ -7,21 +7,16 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function run() {
-    console.log("Checking pagos_reportados structure to find property reference...")
-
-    // We need to see an actual row to know what fields we have
+    // See what columns it actually has
     const { data: cols, error: e1 } = await supabase
-        .from('pagos_reportados')
-        .select(`
-            *
-        `)
-        // remove limits/RLS by just pulling any row that is public
+        .from('logs_sistema')
+        .select('*')
         .limit(1)
 
     if (e1) {
-        console.error('ERROR rows:', JSON.stringify(e1, null, 2))
+        console.error('ERROR col_check:', JSON.stringify(e1, null, 2))
     } else {
-        console.log("ROW DATA:", JSON.stringify(cols, null, 2))
+        console.log("Success: logs_cols exists.", cols, Object.keys(cols?.[0] || {}))
     }
 }
 run()
