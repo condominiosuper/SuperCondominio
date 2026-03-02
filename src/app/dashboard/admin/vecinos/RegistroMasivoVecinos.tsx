@@ -34,7 +34,7 @@ export default function RegistroMasivoVecinos({ inmueblesVacantes }: { inmuebles
             titleRow.height = 40;
             titleRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
 
-            const headers = ['Inmueble', 'Nombre', 'Apellido', 'Cedula', 'Email', 'Telefono'];
+            const headers = ['Inmueble', 'Nombre', 'Apellido', 'Cedula', 'Telefono'];
             const headerRow = sheet.getRow(3);
             headerRow.values = headers;
             headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -50,7 +50,6 @@ export default function RegistroMasivoVecinos({ inmueblesVacantes }: { inmuebles
                         prop?.nombres || '',
                         prop?.apellidos || '',
                         prop?.cedula || '',
-                        prop?.email || '',
                         prop?.telefono || ''
                     ];
                     const row = sheet.addRow(rowData);
@@ -64,8 +63,7 @@ export default function RegistroMasivoVecinos({ inmueblesVacantes }: { inmuebles
             sheet.getColumn(2).width = 25; // Nombre
             sheet.getColumn(3).width = 25; // Apellido
             sheet.getColumn(4).width = 18; // Cedula
-            sheet.getColumn(5).width = 25; // Email
-            sheet.getColumn(6).width = 20; // Telefono
+            sheet.getColumn(5).width = 20; // Telefono
 
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -101,7 +99,6 @@ export default function RegistroMasivoVecinos({ inmueblesVacantes }: { inmuebles
                     nombre: row.Nombre || row.nombre,
                     apellido: row.Apellido || row.apellido,
                     cedula: row.Cedula || row.cedula || row.Cédula,
-                    email: row.Email || row.email || row.Correo,
                     telefono: row.Telefono || row.telefono || row.Teléfono
                 }));
 
