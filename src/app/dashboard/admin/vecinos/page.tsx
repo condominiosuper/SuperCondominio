@@ -46,10 +46,10 @@ export default async function AdminVecinosPage() {
     const inmueblesVancantes = inmuebles?.filter(i => !i.propietario) || []
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-20 pt-32 lg:pt-36">
-            {/* Header Rediseñado y Fixed */}
-            <div className="fixed top-0 left-0 right-0 md:left-72 z-50 bg-[#1e3a8a] text-white pt-12 pb-6 px-1 rounded-b-[2rem] shadow-xl border-b border-white/10 transition-shadow duration-300">
-                <div className="flex justify-between items-center max-w-md md:max-w-4xl lg:max-w-5xl xl:max-w-7xl mx-auto px-5 md:px-0">
+        <div className="min-h-screen bg-slate-50 pb-20">
+            {/* Header Estándar (Fluye con el scroll) */}
+            <div className="bg-[#1e3a8a] text-white pt-12 pb-6 px-6 md:px-10 lg:px-12 rounded-b-[2rem] shadow-xl border-b border-white/10">
+                <div className="flex justify-between items-center max-w-7xl mx-auto">
                     <div className="flex items-center gap-3">
                         <Link href="/dashboard/admin" className="p-2 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/20">
                             <ArrowLeft className="w-5 h-5 text-white" />
