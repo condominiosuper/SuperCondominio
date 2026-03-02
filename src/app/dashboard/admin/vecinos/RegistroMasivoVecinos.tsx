@@ -293,15 +293,7 @@ export default function RegistroMasivoVecinos({ inmueblesVacantes }: { inmuebles
                                             className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium text-sm"
                                         />
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Email</label>
-                                        <input
-                                            name="email"
-                                            type="email"
-                                            placeholder="Ej: pedro@correo.com"
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium text-sm"
-                                        />
-                                    </div>
+
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Teléfono</label>
                                         <input
