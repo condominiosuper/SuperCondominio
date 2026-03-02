@@ -256,12 +256,13 @@ export default function RegistroMasivoVecinos({ inmueblesVacantes }: { inmuebles
 
                             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                                 <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <User className="w-4 h-4" /> Datos del Propietario (Opcional)
+                                    <User className="w-4 h-4" /> Datos del Propietario
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Nombres</label>
                                         <input
+                                            required
                                             name="nombres"
                                             type="text"
                                             placeholder="Ej: Pedro"
@@ -271,6 +272,7 @@ export default function RegistroMasivoVecinos({ inmueblesVacantes }: { inmuebles
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Apellidos</label>
                                         <input
+                                            required
                                             name="apellidos"
                                             type="text"
                                             placeholder="Ej: Perez"
@@ -280,6 +282,7 @@ export default function RegistroMasivoVecinos({ inmueblesVacantes }: { inmuebles
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Cédula</label>
                                         <input
+                                            required
                                             name="cedula"
                                             type="text"
                                             placeholder="Ej: V-12345678"
