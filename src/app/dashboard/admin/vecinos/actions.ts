@@ -56,7 +56,6 @@ export async function crearVecinoAction(formData: FormData) {
                 nombres,
                 apellidos,
                 cedula,
-                email,
                 telefono,
                 auth_user_id: sharedAuthId
             })
@@ -302,7 +301,7 @@ export async function importarInmueblesMasivoAction(items: any[]) {
                 if (!currentInmuebleId) {
                     const { data: newInm, error: errorInm } = await supabase
                         .from('inmuebles')
-                        .insert({ condominio_id: condominioId, identificador: inmueble, alicuota: 0 })
+                        .insert({ condominio_id: condominioId, identificador: inmueble })
                         .select()
                         .single()
 
@@ -335,7 +334,6 @@ export async function importarInmueblesMasivoAction(items: any[]) {
                                 nombres: nombre,
                                 apellidos: apellido,
                                 cedula,
-                                email,
                                 telefono
                             })
                             .select()
