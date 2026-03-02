@@ -36,40 +36,14 @@ export default function ReporteCuentasPorCobrar({ data, tasaBcv }: ReporteProps)
             const workbook = new ExcelJS.Workbook();
             const sheet = workbook.addWorksheet('Plantilla Importación');
 
-            // 1. Título principal
-            sheet.mergeCells('A1', 'O1');
-            const titleRow = sheet.getRow(1);
-            titleRow.getCell(1).value = `PLANTILLA DE IMPORTACIÓN DE DEUDAS Y RECIBOS`;
-            titleRow.height = 40;
-
-            for (let c = 1; c <= 15; c++) {
-                const cell = titleRow.getCell(c);
-                cell.font = { name: 'Inter', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
-                cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } }; // Azul oscuro
-            }
-
-            // 2. Subtítulo Instrucciones
-            sheet.mergeCells('A2', 'O2');
-            const subRow = sheet.getRow(2);
-            subRow.getCell(1).value = `Instrucciones: Rellena los datos de los inmuebles. Los montos de los meses deben estar en Dólares (USD).`;
-            subRow.height = 20;
-
-            for (let c = 1; c <= 15; c++) {
-                const cell = subRow.getCell(c);
-                cell.font = { size: 10, italic: true, color: { argb: 'FF334155' } };
-                cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
-            }
-
-            // 3. Encabezados de Tabla (Fila 4)
+            // 1. Encabezados de Tabla (Fila 1)
             const headers = [
                 'Identificador', 'Propietario', 'Cedula',
                 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
                 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
             ];
 
-            const headerRow = sheet.getRow(4);
+            const headerRow = sheet.getRow(1);
             headerRow.values = headers;
             headerRow.height = 25;
 
@@ -77,15 +51,15 @@ export default function ReporteCuentasPorCobrar({ data, tasaBcv }: ReporteProps)
                 const cell = headerRow.getCell(c);
                 cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
                 cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF334155' } }; // Slate 700
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } }; // Azul oscuro
             }
 
-            // 4. Filas de ejemplo (Opcional, para guiar al usuario)
+            // 2. Filas de ejemplo (Opcional, para guiar al usuario)
             sheet.addRow(['A-11', 'Juan Pérez', 'V-12345678', 50.00, 50.00, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
             sheet.addRow(['B-22', 'María Gómez', 'V-87654321', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
             // Estilos a filas de ejemplo
-            for (let r = 5; r <= 6; r++) {
+            for (let r = 2; r <= 3; r++) {
                 const row = sheet.getRow(r);
                 for (let c = 4; c <= 15; c++) {
                     row.getCell(c).alignment = { horizontal: 'right' };
@@ -95,7 +69,7 @@ export default function ReporteCuentasPorCobrar({ data, tasaBcv }: ReporteProps)
                 row.getCell(3).alignment = { horizontal: 'center' };
             }
 
-            // 5. Ajustes de anchos
+            // 3. Ajustes de anchos
             sheet.getColumn(1).width = 15; // Identificador
             sheet.getColumn(2).width = 35; // Propietario
             sheet.getColumn(3).width = 15; // Cédula
@@ -105,7 +79,7 @@ export default function ReporteCuentasPorCobrar({ data, tasaBcv }: ReporteProps)
 
             // Inmovilizar encabezados
             sheet.views = [
-                { state: 'frozen', xSplit: 0, ySplit: 4 }
+                { state: 'frozen', xSplit: 0, ySplit: 1 }
             ];
 
             // Generar archivo
