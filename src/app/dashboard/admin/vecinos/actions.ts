@@ -217,15 +217,14 @@ export async function crearInmuebleAction(formData: FormData) {
             .from('inmuebles')
             .insert({
                 condominio_id: adminPerfil.condominio_id,
-                identificador,
-                alicuota: 0
+                identificador
             })
             .select()
             .single()
 
         if (error) {
             console.error("Error al crear inmueble:", error)
-            return { success: false, error: 'Error al registrar el inmueble.' }
+            return { success: false, error: error.message || 'Error al registrar el inmueble.' }
         }
 
         // --- Loggeo de Acción ---
