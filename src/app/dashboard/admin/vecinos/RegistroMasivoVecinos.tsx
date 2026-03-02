@@ -37,10 +37,15 @@ export default function RegistroMasivoVecinos({ inmueblesVacantes }: { inmuebles
             const headers = ['Inmueble', 'Nombre', 'Apellido', 'Cedula', 'Telefono'];
             const headerRow = sheet.getRow(3);
             headerRow.values = headers;
-            headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-            headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
-            headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF334155' } };
             headerRow.height = 25;
+
+            // Estilizar solo las celdas con contenido (1 a 5)
+            for (let i = 1; i <= 5; i++) {
+                const cell = headerRow.getCell(i);
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF334155' } };
+            }
 
             if (result.inmuebles) {
                 result.inmuebles.forEach((item: any, index: number) => {
