@@ -220,7 +220,7 @@ export default function ReporteCuentasPorCobrar({ data, dataAnual = [], tasaBcv 
                                         <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 bg-blue-50 text-[#1e3a8a] rounded-lg flex items-center justify-center font-bold text-sm">
+                                                    <div className="min-w-[36px] h-9 px-2 bg-blue-50 text-[#1e3a8a] rounded-lg flex items-center justify-center font-bold text-sm whitespace-nowrap">
                                                         {item.identificador}
                                                     </div>
                                                     <div>
@@ -250,15 +250,15 @@ export default function ReporteCuentasPorCobrar({ data, dataAnual = [], tasaBcv 
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="inline-block">
-                                                    <p className="text-sm font-bold text-[#1e3a8a]">{formatBS(item.cargoMesActualUSD)}</p>
-                                                    <p className="text-[9px] text-[#1e3a8a]/60 font-bold uppercase tracking-widest">{item.cargoMesNombre}</p>
+                                                    <p className="text-sm font-bold text-[#1e3a8a]">{formatUSD(item.cargoMesActualUSD)}</p>
+                                                    <p className="text-[9px] text-[#1e3a8a]/60 font-bold uppercase tracking-widest">{item.cargoMesNombre} • {formatBS(item.cargoMesActualUSD)}</p>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <p className={`text-lg font-black ${item.saldoTotalUSD > 0 ? 'text-slate-800' : 'text-emerald-600'}`}>
-                                                    {formatBS(item.saldoTotalUSD)}
+                                                    {formatUSD(item.saldoTotalUSD)}
                                                 </p>
-                                                <p className="text-[10px] text-slate-400 font-bold font-mono">{formatUSD(item.saldoTotalUSD)}</p>
+                                                <p className="text-[10px] text-slate-400 font-bold font-mono">{formatBS(item.saldoTotalUSD)}</p>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex justify-center gap-2">
