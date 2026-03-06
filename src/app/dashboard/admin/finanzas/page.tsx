@@ -7,6 +7,8 @@ import ReporteCuentasPorCobrar from '@/components/ReporteCuentasPorCobrar'
 import ExcelActions from '@/components/ExcelActions'
 import { getAdminProfile } from '@/utils/supabase/admin-helper'
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminFinanzasPage() {
     const { user, profile: adminPerfil } = await getAdminProfile()
     const supabase = await createClient()
