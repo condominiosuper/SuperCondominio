@@ -115,7 +115,7 @@ export async function getReporteConsolidadosAction() {
 
                     cargoMesActualUSD = recibosDelMes.reduce((acc, r) => acc + (Number(r.monto_usd) - Number(r.monto_pagado_usd)), 0);
 
-                    const nombresUnicos = Array.from(new Set(recibosDelMes.map(r => r.mes)));
+                    const nombresUnicos = Array.from(new Set(recibosDelMes.map(r => r.mes ? r.mes.trim() : 'Cuota')));
                     cargoMesNombre = nombresUnicos.length > 2 ? 'Varias Cuotas' : nombresUnicos.join(' + ');
                 }
             } else if (ultimoRecibo) {
