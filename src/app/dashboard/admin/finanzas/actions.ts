@@ -197,7 +197,7 @@ export async function getReporteAnualAction(year?: number) {
 
         const { data: recibos, error: errRecibos } = await supabase
             .from('recibos_cobro')
-            .select('inmueble_id, monto_usd, mes, fecha_emision')
+            .select('inmueble_id, monto_usd, monto_pagado_usd, mes, fecha_emision')
             .eq('condominio_id', adminPerfil.condominio_id)
             .gte('fecha_emision', startDate)
             .lte('fecha_emision', endDate)
@@ -230,7 +230,7 @@ export async function getReporteAnualAction(year?: number) {
                     const monthIndex = parseInt(monthStr, 10) - 1; // 0-based for array
                     if (monthIndex >= 0 && monthIndex < 12) {
                         const monthName = meses[monthIndex];
-                        row[monthName] += Number(rec.monto_usd || 0);
+                        row[monthName] += Number(rec.monto_pagado_usd || 0);
                     }
                 }
             })
