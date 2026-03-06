@@ -86,10 +86,22 @@ export default function ExcelActions() {
                     }
                 }
 
-                // Alineaciones campos numéricos
+                // Alineaciones campos numéricos y Formato Condicional
                 for (let i = 4; i <= 15; i++) {
-                    row.getCell(i).alignment = { horizontal: 'right' };
-                    row.getCell(i).numFmt = '#,##0.00" $"';
+                    const cellValue = Number(rowData[i - 1]) || 0;
+                    const cell = row.getCell(i);
+
+                    cell.alignment = { horizontal: 'right' };
+                    cell.numFmt = '#,##0.00" $"';
+
+                    if (cellValue === 0) {
+                        // Deuda 0: Gris tenue para evitar ruido visual
+                        cell.font = { color: { argb: 'FF94A3B8' } }; // Text Slate 400
+                    } else if (cellValue > 0) {
+                        // Con deuda: Resaltado rojo pastel
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } }; // bg-red-100
+                        cell.font = { bold: true, color: { argb: 'FF991B1B' } }; // text-red-800
+                    }
                 }
                 row.getCell(1).alignment = { horizontal: 'center' };
                 row.getCell(3).alignment = { horizontal: 'center' };

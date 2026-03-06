@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { Wallet, TrendingUp, HandCoins, ArrowRight, Receipt, FileText, TrendingDown, ClipboardList } from 'lucide-react'
 import ParametrosFinancierosCard from './ParametrosFinancierosCard'
-import { getReporteConsolidadosAction } from './actions'
+import { getReporteConsolidadosAction, getReporteAnualAction } from './actions'
 import ReporteCuentasPorCobrar from '@/components/ReporteCuentasPorCobrar'
 import ExcelActions from '@/components/ExcelActions'
 import { getAdminProfile } from '@/utils/supabase/admin-helper'
@@ -35,8 +35,9 @@ export default async function AdminFinanzasPage() {
         }
     } catch (e) { }
 
-    // Obtener Data para el Reporte Consolidado
+    // Obtener Data para el Reporte Consolidado y Anual
     const { data: reporteData } = await getReporteConsolidadosAction()
+    const { data: reporteAnualData } = await getReporteAnualAction()
 
     // Calcular montos desde la tabla recibos_cobro (INGRESOS)
     const { data: recibos } = await supabase
@@ -129,7 +130,7 @@ export default async function AdminFinanzasPage() {
                         <ExcelActions />
                     </div>
                     {reporteData ? (
-                        <ReporteCuentasPorCobrar data={reporteData} tasaBcv={tasaBcv} />
+                        <ReporteCuentasPorCobrar data={reporteData} dataAnual={reporteAnualData} tasaBcv={tasaBcv} />
                     ) : (
                         <div className="p-10 text-center bg-white rounded-3xl border border-slate-100 text-slate-400 text-sm">
                             Cargando reporte...
