@@ -58,9 +58,21 @@ export async function submitPagoAction(formData: FormData) {
 
         const captureUrl = publicUrlData.publicUrl
 
-        // 5. Tasa BCV (Mock temporal para el MVP)
-        const tasaSimulada = 36.25
-        const montoEquivalenteUsd = Number(montoBs) / tasaSimulada
+        // 5. Tasa BCV (Fetch Real)
+        let tasaAplicada = 36.25; // Fallback de emergencia por si el API falla
+        try {
+            const resBcv = await fetch('https://ve.dolarapi.com/v1/dolares/oficial', { cache: 'no-store' });
+            if (resBcv.ok) {
+                const dataBcv = await resBcv.json();
+                if (dataBcv && dataBcv.promedio) {
+                    tasaAplicada = dataBcv.promedio;
+                }
+            }
+        } catch (e) {
+            console.error("Error fetching DolarAPI for payment. Using fallback:", e);
+        }
+
+        const montoEquivalenteUsd = Number(montoBs) / tasaAplicada
 
         // 6. Insertar Registro en base de datos
         const { error: insertError } = await supabase
@@ -69,7 +81,7 @@ export async function submitPagoAction(formData: FormData) {
                 condominio_id: perfil.condominio_id,
                 perfil_id: perfilId,
                 monto_bs: montoBs,
-                tasa_aplicada: tasaSimulada,
+                tasa_aplicada: tasaAplicada,
                 monto_equivalente_usd: montoEquivalenteUsd,
                 referencia: referencia,
                 fecha_pago: fecha,
