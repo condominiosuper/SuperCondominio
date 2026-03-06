@@ -216,9 +216,23 @@ export async function getReporteAnualAction(year?: number) {
             }
 
             const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-            meses.forEach(m => {
-                const r = recibosInm.find(rec => rec.mes.toLowerCase() === m.toLowerCase())
-                row[m] = r ? Number(r.monto_usd) : 0
+
+            // Initialize all months to 0
+            meses.forEach(m => { row[m] = 0; })
+
+            // Accumulate amounts based on emission date month
+            recibosInm.forEach(rec => {
+                if (!rec.fecha_emision) return;
+                // fecha_emision format: 2026-03-06 or 2026-03-06T...
+                const datePart = rec.fecha_emision.split('T')[0]; // "2026-03-06"
+                const monthStr = datePart.split('-')[1]; // "03"
+                if (monthStr) {
+                    const monthIndex = parseInt(monthStr, 10) - 1; // 0-based for array
+                    if (monthIndex >= 0 && monthIndex < 12) {
+                        const monthName = meses[monthIndex];
+                        row[monthName] += Number(rec.monto_usd || 0);
+                    }
+                }
             })
 
             return row
