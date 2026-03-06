@@ -292,3 +292,111 @@ export async function importRecibosExcelAction(data: any[]) {
         return { error: 'Error al importar datos.' }
     }
 }
+
+interface ManualPaymentProps {
+    inmuebleId: string;
+    montoRegistrado: number;
+    moneda: 'USD' | 'BS';
+    metodo: string;
+    referencia: string;
+    fecha: string;
+    tasaAplicada: number;
+    equivalenteUsd: number;
+}
+
+export async function registrarPagoManualAction(datos: ManualPaymentProps) {
+    try {
+        const supabase = await createClient()
+        const { user, profile: adminPerfil } = await getAdminProfile()
+
+        if (!user || !adminPerfil) return { success: false, error: 'No autorizado.' }
+
+        // 1. Obtener perfil asociado al inmueble (para notificarlo y enrutarlo)
+        const { data: perfilData } = await supabase
+            .from('perfiles')
+            .select('id')
+            .eq('inmueble_id', datos.inmuebleId)
+            .single()
+
+        const perfilId = perfilData?.id || null
+
+        // 2. Registrar el pago en pagos_reportados como APROBADO ya que lo hizo el Admin
+        const { data: nuevoPago, error: insertError } = await supabase
+            .from('pagos_reportados')
+            .insert({
+                condominio_id: adminPerfil.condominio_id,
+                perfil_id: perfilId,
+                monto_bs: datos.moneda === 'BS' ? datos.montoRegistrado : (datos.montoRegistrado * datos.tasaAplicada),
+                tasa_aplicada: datos.tasaAplicada,
+                monto_equivalente_usd: datos.equivalenteUsd,
+                referencia: datos.referencia || 'Registro Manual de Admin',
+                fecha_pago: datos.fecha,
+                banco_origen: datos.metodo,
+                banco_destino: 'Caja',
+                capture_url: 'MANUAL', // Etiqueta especial
+                estado: 'aprobado'
+            })
+            .select('id')
+            .single()
+
+        if (insertError) {
+            console.error("Error insertando pago:", insertError)
+            return { success: false, error: 'Ocurrió un error al guardar el pago.' }
+        }
+
+        // 3. Cascada de Conciliación Automática
+        let montoDisponibleUsd = Number(datos.equivalenteUsd)
+
+        const { data: recibosPendientes } = await supabase
+            .from('recibos_cobro')
+            .select('*')
+            .eq('inmueble_id', datos.inmuebleId)
+            .in('estado', ['pendiente', 'moroso'])
+            .order('fecha_emision', { ascending: true })
+
+        if (recibosPendientes && recibosPendientes.length > 0) {
+            for (const recibo of recibosPendientes) {
+                if (montoDisponibleUsd <= 0.01) break;
+
+                const montoDeuda = Number(recibo.monto_usd) - Number(recibo.monto_pagado_usd)
+                let nuevoPagado = Number(recibo.monto_pagado_usd)
+                let nuevoEstado = recibo.estado
+
+                if (montoDisponibleUsd >= montoDeuda) {
+                    nuevoPagado += montoDeuda
+                    montoDisponibleUsd -= montoDeuda
+                    nuevoEstado = 'pagado'
+                } else {
+                    nuevoPagado += montoDisponibleUsd
+                    montoDisponibleUsd = 0
+                }
+
+                await supabase
+                    .from('recibos_cobro')
+                    .update({
+                        monto_pagado_usd: nuevoPagado.toFixed(2),
+                        estado: nuevoEstado
+                    })
+                    .eq('id', recibo.id)
+            }
+        }
+
+        // 4. Notificar al usuario (si tiene un perfil creado)
+        if (perfilId) {
+            await supabase.from('notificaciones').insert({
+                condominio_id: adminPerfil.condominio_id,
+                perfil_id: perfilId,
+                tipo: 'pago_aprobado',
+                titulo: 'Pago Registrado Oficialmente',
+                mensaje: `La administración ha registrado un pago por valor de $${datos.equivalenteUsd.toFixed(2)} USD y ha sido acreditado a tu cuenta de condominio.`,
+                enlace: '/dashboard/propietario/pagos'
+            })
+        }
+
+        revalidatePath('/dashboard/admin/finanzas')
+        return { success: true }
+    } catch (err: any) {
+        console.error("Error catched en registrarPagoManualAction:", err)
+        return { success: false, error: 'Error inesperado del servidor.' }
+    }
+}

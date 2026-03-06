@@ -7,6 +7,7 @@ import { es } from 'date-fns/locale'
 import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
 import { toast } from 'sonner'
+import ModalRegistroPagoManual from './ModalRegistroPagoManual'
 
 interface ReporteItem {
     id: string
@@ -35,6 +36,8 @@ export default function ReporteCuentasPorCobrar({ data, dataAnual = [], tasaBcv 
     const [activeTab, setActiveTab] = useState<'resumen' | 'matriz'>('resumen')
     const [downloadingTemplate, setDownloadingTemplate] = useState(false)
     const [selectedItem, setSelectedItem] = useState<ReporteItem | null>(null)
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+    const [selectedInmuebleForPayment, setSelectedInmuebleForPayment] = useState<any>(null)
 
     // ... (Mantengo handleDownloadTemplate y filtrado tal cual)
     const handleDownloadTemplate = async () => {
@@ -266,7 +269,15 @@ export default function ReporteCuentasPorCobrar({ data, dataAnual = [], tasaBcv 
                                                 <div className="flex justify-center gap-2">
                                                     <button
                                                         title="Registrar Pago"
-                                                        onClick={() => toast.info('Módulo de registro de pagos manuales en desarrollo.')}
+                                                        onClick={() => {
+                                                            setSelectedInmuebleForPayment({
+                                                                id: item.id,
+                                                                identificador: item.identificador,
+                                                                propietario: item.propietario,
+                                                                saldoTotalUSD: item.saldoTotalUSD
+                                                            });
+                                                            setIsPaymentModalOpen(true);
+                                                        }}
                                                         className="p-2 text-slate-400 hover:text-[#1e3a8a] hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
                                                     >
                                                         <CreditCard className="w-4 h-4" />
@@ -458,7 +469,13 @@ export default function ReporteCuentasPorCobrar({ data, dataAnual = [], tasaBcv 
                             </button>
                             <button
                                 onClick={() => {
-                                    toast.info('Módulo de registro de pagos manuales en desarrollo.');
+                                    setSelectedInmuebleForPayment({
+                                        id: selectedItem.id,
+                                        identificador: selectedItem.identificador,
+                                        propietario: selectedItem.propietario,
+                                        saldoTotalUSD: selectedItem.saldoTotalUSD
+                                    });
+                                    setIsPaymentModalOpen(true);
                                 }}
                                 className="flex-[2] flex items-center justify-center gap-2 bg-[#1e3a8a] text-white px-5 py-3.5 rounded-xl font-bold hover:bg-blue-900 transition-all shadow-sm focus:ring-4 ring-[#1e3a8a]/20 w-full"
                             >
@@ -468,6 +485,18 @@ export default function ReporteCuentasPorCobrar({ data, dataAnual = [], tasaBcv 
                     </div>
                 </div>
             )}
+
+            <ModalRegistroPagoManual
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                inmueble={selectedInmuebleForPayment}
+                tasaBcv={tasaBcv}
+                onSuccess={() => {
+                    setIsPaymentModalOpen(false);
+                    // Force a reload using window location to get fresh server data
+                    window.location.reload();
+                }}
+            />
         </>
     )
 }
